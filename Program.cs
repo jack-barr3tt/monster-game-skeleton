@@ -459,11 +459,14 @@ namespace CSPreASSkelton
 
                     Eaten = CheckIfSameCell(MonsterPosition, PlayerPosition);
 
-                    if (!Eaten) { 
+                    if(CheckIfSameCell(PlayerPosition, FlaskPosition)){
+                        DisplayWonGameMessage(true);
+                        break;
+                    }else if (!Eaten) { 
                         DisplayCavern(Cavern);
                         Score += 1;
                     }
-                }
+                }                
 
                 if (!Eaten)
 
