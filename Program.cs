@@ -91,7 +91,9 @@ namespace CSPreASSkelton
 
         {
 
-            int Choice; Choice = int.Parse(Console.ReadLine());
+            int Choice = 4; 
+            
+            int.TryParse(Console.ReadLine(), out Choice);
 
             Console.WriteLine();
 
@@ -235,9 +237,9 @@ namespace CSPreASSkelton
 
         {
 
-            char Move;
+            char Move = 'a';
 
-            Move = char.Parse(Console.ReadLine());
+            char.TryParse(Console.ReadLine(), out Move);
 
             Console.WriteLine();
 
