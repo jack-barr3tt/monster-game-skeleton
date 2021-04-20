@@ -301,6 +301,12 @@ namespace CSPreASSkelton
 
             }
 
+            else if ((Direction == 'w' && PlayerPosition.NoOfCellsEast == 0) || (Direction == 'e' && PlayerPosition.NoOfCellsEast == W_E_DISTANCE - 1)) {
+
+                ValidMove = false;
+
+            }
+
             return ValidMove;
 
         }
