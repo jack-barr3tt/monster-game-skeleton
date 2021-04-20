@@ -55,6 +55,11 @@ namespace CSPreASSkelton
                         PlayGame(Cavern, ref MonsterPosition, ref PlayerPosition);
 
                         break;
+                    case 3:
+                        break;
+                    default:
+                        System.Console.WriteLine("Invalid input, please re-enter");
+                        break;
 
                }
 
@@ -398,7 +403,7 @@ namespace CSPreASSkelton
 
                 ValidMove = false;
 
-                while (!ValidMove)
+                while (true)
 
                 {
 
@@ -407,6 +412,12 @@ namespace CSPreASSkelton
                     MoveDirection = GetMove();
 
                     ValidMove = CheckValidMove(PlayerPosition, MoveDirection);
+
+                    if(ValidMove){
+                        break;
+                    }else{
+                        System.Console.WriteLine("Invalid input, please re-enter");
+                    }
 
                 }
 
