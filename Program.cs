@@ -339,57 +339,31 @@ namespace CSPreASSkelton
 
             return InSameCell; }
 
-        public static void MakeMonsterMove(char[,] Cavern, ref CellReference MonsterPosition, CellReference PlayerPosition)
+        public static void MakeMonsterMove(char[,] Cavern, ref CellReference MonsterPosition, CellReference PlayerPosition, ref CellReference FlaskPosition)
 
         {
 
-            CellReference OriginalMonsterPosition = new CellReference();
-
-            OriginalMonsterPosition.NoOfCellsSouth = MonsterPosition.NoOfCellsSouth;
-
-            OriginalMonsterPosition.NoOfCellsEast = MonsterPosition.NoOfCellsEast;
+            CellReference OriginalMonsterPosition = MonsterPosition;
 
             Cavern[MonsterPosition.NoOfCellsSouth, MonsterPosition.NoOfCellsEast] = ' ';
 
-            if (MonsterPosition.NoOfCellsSouth < PlayerPosition.NoOfCellsSouth)
+            int XDiff = PlayerPosition.NoOfCellsEast - MonsterPosition.NoOfCellsEast;
+            int YDiff = PlayerPosition.NoOfCellsSouth - MonsterPosition.NoOfCellsSouth;
 
-            {
+            int XMove = XDiff / (XDiff == 0 ? 1 : Math.Abs(XDiff));
+            int YMove = YDiff / (YDiff == 0 ? 1 : Math.Abs(YDiff));
 
-                MonsterPosition.NoOfCellsSouth = MonsterPosition.NoOfCellsSouth + 1;
-
+            if(XMove != 0 && YMove != 0){
+                MonsterPosition.NoOfCellsSouth += YMove;
+            }else{
+                MonsterPosition.NoOfCellsEast += XMove;
+                MonsterPosition.NoOfCellsSouth += YMove;
             }
 
-            else if (MonsterPosition.NoOfCellsSouth > PlayerPosition.NoOfCellsSouth)
-
-            {
-
-                MonsterPosition.NoOfCellsSouth = MonsterPosition.NoOfCellsSouth - 1;
-
+            if(CheckIfSameCell(MonsterPosition, FlaskPosition)){
+                Cavern[OriginalMonsterPosition.NoOfCellsSouth, OriginalMonsterPosition.NoOfCellsEast] = 'F';
+                FlaskPosition = OriginalMonsterPosition;
             }
-
- 
-
-            else if (MonsterPosition.NoOfCellsEast < PlayerPosition.NoOfCellsEast)
-
-            {
-
-                MonsterPosition.NoOfCellsEast = MonsterPosition.NoOfCellsEast + 1;
-
- 
-
-            }
-
- 
-
-            else if (MonsterPosition.NoOfCellsEast > PlayerPosition.NoOfCellsEast)
-
-            {
-
-                MonsterPosition.NoOfCellsEast = MonsterPosition.NoOfCellsEast - 1;
-
-            }
-
- 
 
             Cavern[MonsterPosition.NoOfCellsSouth, MonsterPosition.NoOfCellsEast] = 'M';
 
@@ -478,7 +452,7 @@ namespace CSPreASSkelton
 
                     {
 
-                        MakeMonsterMove(Cavern, ref MonsterPosition, PlayerPosition);
+                        MakeMonsterMove(Cavern, ref MonsterPosition, PlayerPosition, ref FlaskPosition);
 
                         Eaten = CheckIfSameCell(MonsterPosition, PlayerPosition);
 
