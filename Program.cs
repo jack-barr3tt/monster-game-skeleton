@@ -244,23 +244,25 @@ namespace CSPreASSkelton
 
             Cavern[PlayerPosition.NoOfCellsSouth, PlayerPosition.NoOfCellsEast] = ' ';
 
+            Direction = char.ToLower(Direction);
+
             switch (Direction)
 
             {
 
-                case 'N': PlayerPosition.NoOfCellsSouth = PlayerPosition.NoOfCellsSouth - 1;
+                case 'n': PlayerPosition.NoOfCellsSouth = PlayerPosition.NoOfCellsSouth - 1;
 
                     break;
 
-                case 'S': PlayerPosition.NoOfCellsSouth = PlayerPosition.NoOfCellsSouth + 1;
+                case 's': PlayerPosition.NoOfCellsSouth = PlayerPosition.NoOfCellsSouth + 1;
 
                     break;
 
-                case 'W': PlayerPosition.NoOfCellsEast = PlayerPosition.NoOfCellsEast - 1;
+                case 'w': PlayerPosition.NoOfCellsEast = PlayerPosition.NoOfCellsEast - 1;
 
                     break;
 
-                case 'E': PlayerPosition.NoOfCellsEast = PlayerPosition.NoOfCellsEast + 1;
+                case 'e': PlayerPosition.NoOfCellsEast = PlayerPosition.NoOfCellsEast + 1;
 
                     break;
 
@@ -276,15 +278,17 @@ namespace CSPreASSkelton
 
             Boolean ValidMove;
 
+            Direction = char.ToLower(Direction);
+
             ValidMove = true;
 
-            if (!(Direction == 'N' || Direction == 'S' || Direction == 'W' || Direction == 'E' || Direction == 'M')) {
+            if (!(Direction == 'n' || Direction == 's' || Direction == 'w' || Direction == 'e' || Direction == 'm')) {
 
                 ValidMove = false;
 
             }
 
-            else if ((Direction == 'N' && PlayerPosition.NoOfCellsSouth == 0) || (Direction == 'S' && PlayerPosition.NoOfCellsSouth == N_S_DISTANCE - 1)) {
+            else if ((Direction == 'n' && PlayerPosition.NoOfCellsSouth == 0) || (Direction == 's' && PlayerPosition.NoOfCellsSouth == N_S_DISTANCE - 1)) {
 
                 ValidMove = false;
 
@@ -461,4 +465,3 @@ namespace CSPreASSkelton
     }
 
 }
-
