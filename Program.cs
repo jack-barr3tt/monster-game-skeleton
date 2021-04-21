@@ -145,6 +145,16 @@ namespace CSPreASSkelton
 
         }
 
+        public static CellReference SetPositionOfItem(ref char[,] Cavern, char Item){
+            while(true){
+                CellReference testedPosition = GetNewRandomPosition();
+                if(Cavern[testedPosition.NoOfCellsSouth, testedPosition.NoOfCellsEast] == ' '){
+                    Cavern[testedPosition.NoOfCellsSouth, testedPosition.NoOfCellsEast] = Item;
+                    return testedPosition;
+                }
+            }
+        }
+
         public static void SetUpGame(char[,] Cavern, ref CellReference MonsterPosition, ref CellReference PlayerPosition, ref CellReference FlaskPosition, ref int Score, ref bool MonsterAwake)
 
         {
@@ -155,19 +165,11 @@ namespace CSPreASSkelton
 
             MonsterAwake = false;
 
-            PlayerPosition.NoOfCellsSouth = 0;
+            PlayerPosition = SetPositionOfItem(ref Cavern, '*');
 
-            PlayerPosition.NoOfCellsEast = 0;
+            MonsterPosition = SetPositionOfItem(ref Cavern, 'M');
 
-            Cavern[PlayerPosition.NoOfCellsSouth, PlayerPosition.NoOfCellsEast] = '*';
-
-            MonsterPosition = GetNewRandomPosition();
-
-            Cavern[MonsterPosition.NoOfCellsSouth, MonsterPosition.NoOfCellsEast] = 'M';
-
-            FlaskPosition = GetNewRandomPosition();
-
-            Cavern[FlaskPosition.NoOfCellsSouth, FlaskPosition.NoOfCellsEast] = 'F';
+            FlaskPosition = SetPositionOfItem(ref Cavern, 'F');
 
         }
 
