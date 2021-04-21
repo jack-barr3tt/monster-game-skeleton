@@ -26,6 +26,8 @@ namespace CSPreASSkelton
 
             int Score = 0;
 
+            bool MonsterAwake = false;
+
             CellReference MonsterPosition = new CellReference();
 
             CellReference PlayerPosition = new CellReference();
@@ -48,15 +50,15 @@ namespace CSPreASSkelton
 
                     case 1:
 
-                        SetUpGame(Cavern, ref MonsterPosition, ref PlayerPosition, ref FlaskPosition, ref Score);
+                        SetUpGame(Cavern, ref MonsterPosition, ref PlayerPosition, ref FlaskPosition, ref Score, ref MonsterAwake);
 
-                        PlayGame(Cavern, ref MonsterPosition, ref PlayerPosition, ref FlaskPosition, ref Score);
+                        PlayGame(Cavern, ref MonsterPosition, ref PlayerPosition, ref FlaskPosition, ref Score, ref MonsterAwake);
 
                         break;
 
-                    case 2: SetUpTrainingGame(Cavern, ref MonsterPosition, ref FlaskPosition, ref PlayerPosition, ref Score);
+                    case 2: SetUpTrainingGame(Cavern, ref MonsterPosition, ref PlayerPosition, ref FlaskPosition, ref Score, ref MonsterAwake);
 
-                        PlayGame(Cavern, ref MonsterPosition, ref PlayerPosition, ref FlaskPosition, ref Score);
+                        PlayGame(Cavern, ref MonsterPosition, ref PlayerPosition, ref FlaskPosition, ref Score, ref MonsterAwake);
 
                         break;
                     case 3:
@@ -143,13 +145,15 @@ namespace CSPreASSkelton
 
         }
 
-        public static void SetUpGame(char[,] Cavern, ref CellReference MonsterPosition, ref CellReference PlayerPosition, ref CellReference FlaskPosition, ref int Score)
+        public static void SetUpGame(char[,] Cavern, ref CellReference MonsterPosition, ref CellReference PlayerPosition, ref CellReference FlaskPosition, ref int Score, ref bool MonsterAwake)
 
         {
 
             ResetCavern(Cavern);
 
             Score = 0;
+
+            MonsterAwake = false;
 
             PlayerPosition.NoOfCellsSouth = 0;
 
@@ -167,11 +171,13 @@ namespace CSPreASSkelton
 
         }
 
-        public static void SetUpTrainingGame(char[,] Cavern, ref CellReference MonsterPosition, ref CellReference PlayerPosition, ref CellReference FlaskPosition, ref int Score) {
+        public static void SetUpTrainingGame(char[,] Cavern, ref CellReference MonsterPosition, ref CellReference PlayerPosition, ref CellReference FlaskPosition, ref int Score, ref bool MonsterAwake) {
 
             ResetCavern(Cavern);
 
             Score = 0;
+
+            MonsterAwake = false;
 
             PlayerPosition.NoOfCellsSouth = 2;
 
@@ -385,7 +391,7 @@ namespace CSPreASSkelton
             System.Console.WriteLine("You win! " + (GotFlask ? "You grabbed the flask before the monster grabbed you!" : "You have outrun the monster and survived the cavern!"));
         }
 
-        public static void PlayGame(char[,] Cavern, ref CellReference MonsterPosition, ref CellReference PlayerPosition, ref CellReference FlaskPosition, ref int Score)
+        public static void PlayGame(char[,] Cavern, ref CellReference MonsterPosition, ref CellReference PlayerPosition, ref CellReference FlaskPosition, ref int Score, ref bool MonsterAwake)
 
         {
 
@@ -448,7 +454,7 @@ namespace CSPreASSkelton
 
                     Count = 0;
 
-                    while (Count < 2 && !Eaten)
+                    while (Count < 2 && !Eaten && MonsterAwake)
 
                     {
 
@@ -478,6 +484,8 @@ namespace CSPreASSkelton
                 if(Score > 9){
                     DisplayWonGameMessage(false);
                     break;
+                }else if(Score > 1){
+                    MonsterAwake = true;
                 }
 
             }
