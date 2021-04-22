@@ -211,7 +211,7 @@ namespace CSPreASSkelton
 
         }
 
-        public static void DisplayCavern(char[,] Cavern)
+        public static void DisplayCavern(char[,] Cavern, bool MonsterAwake)
 
         {
 
@@ -227,13 +227,13 @@ namespace CSPreASSkelton
 
                 for (Count2 = 0; Count2 < W_E_DISTANCE; Count2++) {
 
-                    if ((new char[5]{' ','*','M','F','T'}).Contains(Cavern[Count1, Count2])) {
+                    if ((new char[4]{' ','*','F','T'}).Contains(Cavern[Count1, Count2])) {
 
                         Console.Write("|" + Cavern[Count1, Count2]);
 
-                    }
-
-                    else {
+                    }else if(Cavern[Count1, Count2] == 'M' && MonsterAwake){
+                        Console.Write("|" + Cavern[Count1, Count2]);
+                    } else {
 
                         Console.Write("| ");
 
@@ -417,7 +417,7 @@ namespace CSPreASSkelton
 
             char MoveDirection = ' ';
 
-            DisplayCavern(Cavern);
+            DisplayCavern(Cavern, MonsterAwake);
 
             while (true)
 
@@ -449,7 +449,7 @@ namespace CSPreASSkelton
 
                     MakeMove(Cavern, MoveDirection, ref PlayerPosition);
 
-                    DisplayCavern(Cavern);
+                    DisplayCavern(Cavern, MonsterAwake);
 
                     Eaten = CheckIfSameCell(MonsterPosition, PlayerPosition);
 
@@ -463,7 +463,7 @@ namespace CSPreASSkelton
                         DisplayWonGameMessage(true);
                         break;
                     }else if (!Eaten) { 
-                        DisplayCavern(Cavern);
+                        DisplayCavern(Cavern, MonsterAwake);
                         if(MonsterAwake == true){
                             Score += 1;
                         }
@@ -490,7 +490,7 @@ namespace CSPreASSkelton
 
                         Console.ReadLine();
 
-                        DisplayCavern(Cavern);
+                        DisplayCavern(Cavern, MonsterAwake);
 
                         Count = Count + 1;
 
