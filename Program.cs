@@ -453,12 +453,20 @@ namespace CSPreASSkelton
 
                     Eaten = CheckIfSameCell(MonsterPosition, PlayerPosition);
 
+                    for(int i = 0; i < TrapPositions.Length; i++){
+                        if(CheckIfSameCell(PlayerPosition, TrapPositions[i])){
+                            MonsterAwake = true;
+                        }
+                    }
+
                     if(CheckIfSameCell(PlayerPosition, FlaskPosition)){
                         DisplayWonGameMessage(true);
                         break;
                     }else if (!Eaten) { 
                         DisplayCavern(Cavern);
-                        Score += 1;
+                        if(MonsterAwake == true){
+                            Score += 1;
+                        }
                     }
                 }                
 
@@ -498,10 +506,7 @@ namespace CSPreASSkelton
                 if(Score > 9){
                     DisplayWonGameMessage(false);
                     break;
-                }else if(Score > 1){
-                    MonsterAwake = true;
                 }
-
             }
 
         }
