@@ -14,6 +14,8 @@ namespace CSPreASSkelton
 
         public const int W_E_DISTANCE = 7;
 
+        public const int NO_OF_TRAPS = 2;
+
         public struct CellReference { public int NoOfCellsSouth; public int NoOfCellsEast; }
 
         static void Main(string[] args)
@@ -34,6 +36,8 @@ namespace CSPreASSkelton
 
             CellReference FlaskPosition = new CellReference();
 
+            CellReference[] TrapPositions = new CellReference[NO_OF_TRAPS]; 
+
  
 
             while (Choice != 3)
@@ -50,15 +54,15 @@ namespace CSPreASSkelton
 
                     case 1:
 
-                        SetUpGame(Cavern, ref MonsterPosition, ref PlayerPosition, ref FlaskPosition, ref Score, ref MonsterAwake);
+                        SetUpGame(Cavern, ref MonsterPosition, ref PlayerPosition, ref FlaskPosition, ref TrapPositions, ref Score, ref MonsterAwake);
 
-                        PlayGame(Cavern, ref MonsterPosition, ref PlayerPosition, ref FlaskPosition, ref Score, ref MonsterAwake);
+                        PlayGame(Cavern, ref MonsterPosition, ref PlayerPosition, ref FlaskPosition, ref TrapPositions, ref Score, ref MonsterAwake);
 
                         break;
 
-                    case 2: SetUpTrainingGame(Cavern, ref MonsterPosition, ref PlayerPosition, ref FlaskPosition, ref Score, ref MonsterAwake);
+                    case 2: SetUpTrainingGame(Cavern, ref MonsterPosition, ref PlayerPosition, ref FlaskPosition, ref TrapPositions, ref Score, ref MonsterAwake);
 
-                        PlayGame(Cavern, ref MonsterPosition, ref PlayerPosition, ref FlaskPosition, ref Score, ref MonsterAwake);
+                        PlayGame(Cavern, ref MonsterPosition, ref PlayerPosition, ref FlaskPosition, ref TrapPositions, ref Score, ref MonsterAwake);
 
                         break;
                     case 3:
@@ -155,7 +159,7 @@ namespace CSPreASSkelton
             }
         }
 
-        public static void SetUpGame(char[,] Cavern, ref CellReference MonsterPosition, ref CellReference PlayerPosition, ref CellReference FlaskPosition, ref int Score, ref bool MonsterAwake)
+        public static void SetUpGame(char[,] Cavern, ref CellReference MonsterPosition, ref CellReference PlayerPosition, ref CellReference FlaskPosition, ref CellReference[] TrapPositions, ref int Score, ref bool MonsterAwake)
 
         {
 
@@ -171,9 +175,13 @@ namespace CSPreASSkelton
 
             FlaskPosition = SetPositionOfItem(ref Cavern, 'F');
 
+            for(int i = 0; i < TrapPositions.Length; i++){
+                TrapPositions[i] = SetPositionOfItem(ref Cavern, 'T');
+            }
+
         }
 
-        public static void SetUpTrainingGame(char[,] Cavern, ref CellReference MonsterPosition, ref CellReference PlayerPosition, ref CellReference FlaskPosition, ref int Score, ref bool MonsterAwake) {
+        public static void SetUpTrainingGame(char[,] Cavern, ref CellReference MonsterPosition, ref CellReference PlayerPosition, ref CellReference FlaskPosition, ref CellReference[] TrapPositions, ref int Score, ref bool MonsterAwake) {
 
             ResetCavern(Cavern);
 
@@ -197,6 +205,10 @@ namespace CSPreASSkelton
 
             Cavern[FlaskPosition.NoOfCellsSouth, FlaskPosition.NoOfCellsEast] = 'F';
 
+            for(int i = 0; i < TrapPositions.Length; i++){
+                TrapPositions[i] = SetPositionOfItem(ref Cavern, 'T');
+            }
+
         }
 
         public static void DisplayCavern(char[,] Cavern)
@@ -215,7 +227,7 @@ namespace CSPreASSkelton
 
                 for (Count2 = 0; Count2 < W_E_DISTANCE; Count2++) {
 
-                    if ((new char[4]{' ','*','M','F'}).Contains(Cavern[Count1, Count2])) {
+                    if ((new char[5]{' ','*','M','F','T'}).Contains(Cavern[Count1, Count2])) {
 
                         Console.Write("|" + Cavern[Count1, Count2]);
 
@@ -393,7 +405,7 @@ namespace CSPreASSkelton
             System.Console.WriteLine("You win! " + (GotFlask ? "You grabbed the flask before the monster grabbed you!" : "You have outrun the monster and survived the cavern!"));
         }
 
-        public static void PlayGame(char[,] Cavern, ref CellReference MonsterPosition, ref CellReference PlayerPosition, ref CellReference FlaskPosition, ref int Score, ref bool MonsterAwake)
+        public static void PlayGame(char[,] Cavern, ref CellReference MonsterPosition, ref CellReference PlayerPosition, ref CellReference FlaskPosition, ref CellReference[] TrapPositions, ref int Score, ref bool MonsterAwake)
 
         {
 
