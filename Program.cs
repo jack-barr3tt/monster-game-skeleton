@@ -40,7 +40,7 @@ namespace CSPreASSkelton
 
  
 
-            while (Choice != 3)
+            while (Choice != 5)
 
             {
 
@@ -66,6 +66,12 @@ namespace CSPreASSkelton
 
                         break;
                     case 3:
+                        System.Console.WriteLine("This is where you would save a game.");
+                        break;
+                    case 4:
+                        System.Console.WriteLine("This is where you would load a past game.");
+                        break;
+                    case 5:
                         break;
                     default:
                         System.Console.WriteLine("Invalid input, please re-enter");
@@ -89,7 +95,11 @@ namespace CSPreASSkelton
 
             Console.WriteLine("2. Play training game");
 
-            Console.WriteLine("3. Quit");
+            Console.WriteLine("3. Save Game data");
+            
+            Console.WriteLine("4. Load Game data");
+
+            Console.WriteLine("5. Quit");
 
             Console.WriteLine();
 
@@ -101,7 +111,7 @@ namespace CSPreASSkelton
 
         {
 
-            int Choice = 4; 
+            int Choice = 6; 
             
             int.TryParse(Console.ReadLine(), out Choice);
 
