@@ -603,6 +603,7 @@ namespace CSPreASSkelton
                     }
 
                     if(CheckIfSameCell(PlayerPosition, FlaskPosition)){
+                        Eaten = true;
                         DisplayWonGameMessage(true);
                         break;
                     }else if (!Eaten) { 
@@ -647,6 +648,7 @@ namespace CSPreASSkelton
                 }
 
                 if(Score > 9){
+                    Eaten = true;
                     DisplayWonGameMessage(false);
                     break;
                 }
