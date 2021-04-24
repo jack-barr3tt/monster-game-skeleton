@@ -1,6 +1,7 @@
 ﻿using System;
-
+using System.Xml;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace CSPreASSkelton
 
@@ -66,7 +67,7 @@ namespace CSPreASSkelton
 
                         break;
                     case 3:
-                        System.Console.WriteLine("This is where you would save a game.");
+                        SaveGame(ref Cavern, MonsterPosition, PlayerPosition, FlaskPosition, TrapPositions, Score, MonsterAwake);
                         break;
                     case 4:
                         System.Console.WriteLine("This is where you would load a past game.");
@@ -81,6 +82,49 @@ namespace CSPreASSkelton
 
             }
 
+        }
+
+        public static void AddItem(ref XmlTextWriter writer, string type, string[] names, string[] values){
+            writer.WriteStartElement(type);
+            for(int i = 0; i < names.Length; i++){
+                writer.WriteStartElement(names[i]);
+                writer.WriteString(values[i]);
+                writer.WriteEndElement();
+            }
+            writer.WriteEndElement();
+        }
+        public static void SaveGame(ref char[,] Cavern, CellReference MonsterPosition, CellReference PlayerPosition, CellReference FlaskPosition, CellReference[] TrapPositions, int Score, bool MonsterAwake){
+            XmlTextWriter writer = new XmlTextWriter("savegame.xml", System.Text.Encoding.UTF8);
+            writer.Formatting = Formatting.Indented;
+            writer.Indentation = 2;
+            
+            writer.WriteStartDocument(true);
+            writer.WriteStartElement("Game");
+
+            List<CellReference> GameObjects = new List<CellReference>();
+            GameObjects.AddRange(new CellReference[3]{PlayerPosition, MonsterPosition, FlaskPosition});
+            GameObjects.AddRange(TrapPositions);
+
+            writer.WriteStartElement("Items");
+            for(int i = 0; i < GameObjects.Count; i++){
+                string type = Cavern[GameObjects[i].NoOfCellsSouth, GameObjects[i].NoOfCellsEast]+"";
+                string south = GameObjects[i].NoOfCellsSouth+"";
+                string east = GameObjects[i].NoOfCellsEast+"";
+                
+                AddItem(ref writer, "Item", new string[3]{"Type","NoOfCellsSouth","NoOfCellsEast"}, new string[3]{type, south, east});
+            }
+            writer.WriteEndElement();
+
+            writer.WriteStartElement("Properties"); 
+            AddItem(ref writer, "Property", new string[2]{"Name","Value"}, new string[2]{"MonsterAwake",""+MonsterAwake});
+            AddItem(ref writer, "Property", new string[2]{"Name","Value"}, new string[2]{"Score",""+Score});
+            writer.WriteEndElement();
+
+            writer.WriteEndDocument();
+            writer.Close();
+
+            System.Console.WriteLine("Your progress has been saved. Press enter to return to menu.");
+            System.Console.ReadLine();
         }
 
         public static void DisplayMenu()
