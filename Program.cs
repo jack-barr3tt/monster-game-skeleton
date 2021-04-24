@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Xml;
+using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 
@@ -17,7 +18,7 @@ namespace CSPreASSkelton
 
         public const int NO_OF_TRAPS = 2;
 
-        public struct CellReference { public int NoOfCellsSouth; public int NoOfCellsEast; }
+        public class CellReference { public int NoOfCellsSouth; public int NoOfCellsEast; }
 
         static void Main(string[] args)
 
@@ -37,7 +38,7 @@ namespace CSPreASSkelton
 
             CellReference FlaskPosition = new CellReference();
 
-            CellReference[] TrapPositions = new CellReference[NO_OF_TRAPS]; 
+            List<CellReference> TrapPositions = new List<CellReference>();
 
  
 
@@ -67,10 +68,11 @@ namespace CSPreASSkelton
 
                         break;
                     case 3:
-                        SaveGame(ref Cavern, MonsterPosition, PlayerPosition, FlaskPosition, TrapPositions, Score, MonsterAwake);
+                        SaveGame(Cavern, MonsterPosition, PlayerPosition, FlaskPosition, TrapPositions, Score, MonsterAwake);
                         break;
                     case 4:
-                        System.Console.WriteLine("This is where you would load a past game.");
+                        LoadGame(ref Cavern, ref MonsterPosition, ref PlayerPosition, ref FlaskPosition, ref TrapPositions, ref Score, ref MonsterAwake);
+                        PlayGame(Cavern, ref MonsterPosition, ref PlayerPosition, ref FlaskPosition, ref TrapPositions, ref Score, ref MonsterAwake);
                         break;
                     case 5:
                         break;
@@ -93,7 +95,7 @@ namespace CSPreASSkelton
             }
             writer.WriteEndElement();
         }
-        public static void SaveGame(ref char[,] Cavern, CellReference MonsterPosition, CellReference PlayerPosition, CellReference FlaskPosition, CellReference[] TrapPositions, int Score, bool MonsterAwake){
+        public static void SaveGame(char[,] Cavern, CellReference MonsterPosition, CellReference PlayerPosition, CellReference FlaskPosition, List<CellReference> TrapPositions, int Score, bool MonsterAwake){
             XmlTextWriter writer = new XmlTextWriter("savegame.xml", System.Text.Encoding.UTF8);
             writer.Formatting = Formatting.Indented;
             writer.Indentation = 2;
@@ -125,6 +127,60 @@ namespace CSPreASSkelton
 
             System.Console.WriteLine("Your progress has been saved. Press enter to return to menu.");
             System.Console.ReadLine();
+        }
+
+        public static void LoadGame(ref char[,] Cavern, ref CellReference MonsterPosition, ref CellReference PlayerPosition, ref CellReference FlaskPosition, ref List<CellReference> TrapPositions, ref int Score, ref bool MonsterAwake){
+            TrapPositions = new List<CellReference>();
+            ResetCavern(ref Cavern);
+            
+            XmlDocument xmldoc = new XmlDocument();
+            FileStream fs = new FileStream("savegame.xml", FileMode.Open, FileAccess.Read);
+            xmldoc.Load(fs);
+
+            XmlNode items = xmldoc.GetElementsByTagName("Items")[0];          
+
+            for(int i = 0; i < items.ChildNodes.Count; i++){
+                XmlNode item = items.ChildNodes[i];
+
+                CellReference itemRef = new CellReference();
+
+                char name = '\u0000';
+                
+                for(int j = 0; j < item.ChildNodes.Count; j++){
+                    XmlNode property = item.ChildNodes[j];
+
+                    try{
+                        typeof(CellReference).GetField(property.Name).SetValue(itemRef, Convert.ToInt32(property.InnerText));
+                    }catch{
+                        name = Convert.ToChar(property.InnerText);
+                    }
+                }    
+
+                if(name == '*'){
+                    PlayerPosition = itemRef;
+                }else if(name == 'M'){
+                    MonsterPosition = itemRef;
+                }else if(name == 'F'){
+                    FlaskPosition = itemRef;
+                }else{
+                    TrapPositions.Add(itemRef);
+                }
+
+                Cavern[itemRef.NoOfCellsSouth, itemRef.NoOfCellsEast] = name;
+            }
+
+            XmlNode props = xmldoc.GetElementsByTagName("Properties")[0];
+            for(int i = 0; i < props.ChildNodes.Count; i++){
+                XmlNode prop = props.ChildNodes[i];
+                if(prop.ChildNodes[0].InnerText == "MonsterAwake"){
+                    MonsterAwake = Convert.ToBoolean(prop.ChildNodes[1].InnerText);
+                }else{
+                    Score = Convert.ToInt32(prop.ChildNodes[1].InnerText);
+                }
+            }
+
+            System.Console.WriteLine("Your saved game has been restored.\n");
+            Console.ReadLine();
         }
 
         public static void DisplayMenu()
@@ -165,7 +221,7 @@ namespace CSPreASSkelton
 
         }
 
-        public static void ResetCavern(char[,] Cavern)
+        public static void ResetCavern(ref char[,] Cavern)
 
         {
 
@@ -213,11 +269,11 @@ namespace CSPreASSkelton
             }
         }
 
-        public static void SetUpGame(char[,] Cavern, ref CellReference MonsterPosition, ref CellReference PlayerPosition, ref CellReference FlaskPosition, ref CellReference[] TrapPositions, ref int Score, ref bool MonsterAwake)
+        public static void SetUpGame(char[,] Cavern, ref CellReference MonsterPosition, ref CellReference PlayerPosition, ref CellReference FlaskPosition, ref List<CellReference> TrapPositions, ref int Score, ref bool MonsterAwake)
 
         {
 
-            ResetCavern(Cavern);
+            ResetCavern(ref Cavern);
 
             Score = 0;
 
@@ -229,15 +285,16 @@ namespace CSPreASSkelton
 
             FlaskPosition = SetPositionOfItem(ref Cavern, 'F');
 
-            for(int i = 0; i < TrapPositions.Length; i++){
-                TrapPositions[i] = SetPositionOfItem(ref Cavern, 'T');
+            TrapPositions = new List<CellReference>();
+            for(int i = 0; i < NO_OF_TRAPS; i++){
+                TrapPositions.Add(SetPositionOfItem(ref Cavern, 'T'));
             }
 
         }
 
-        public static void SetUpTrainingGame(char[,] Cavern, ref CellReference MonsterPosition, ref CellReference PlayerPosition, ref CellReference FlaskPosition, ref CellReference[] TrapPositions, ref int Score, ref bool MonsterAwake) {
+        public static void SetUpTrainingGame(char[,] Cavern, ref CellReference MonsterPosition, ref CellReference PlayerPosition, ref CellReference FlaskPosition, ref List<CellReference> TrapPositions, ref int Score, ref bool MonsterAwake) {
 
-            ResetCavern(Cavern);
+            ResetCavern(ref Cavern);
 
             Score = 0;
 
@@ -259,8 +316,9 @@ namespace CSPreASSkelton
 
             Cavern[FlaskPosition.NoOfCellsSouth, FlaskPosition.NoOfCellsEast] = 'F';
 
-            for(int i = 0; i < TrapPositions.Length; i++){
-                TrapPositions[i] = SetPositionOfItem(ref Cavern, 'T');
+            TrapPositions = new List<CellReference>();
+            for(int i = 0; i < NO_OF_TRAPS; i++){
+                TrapPositions.Add(SetPositionOfItem(ref Cavern, 'T'));
             }
 
         }
@@ -411,13 +469,20 @@ namespace CSPreASSkelton
 
             }
 
-            return InSameCell; }
+            return InSameCell; 
+        }
 
-        public static void MakeMonsterMove(char[,] Cavern, ref CellReference MonsterPosition, CellReference PlayerPosition, ref CellReference FlaskPosition)
+        public static CellReference CopyPosition(CellReference Position){
+            CellReference Target = new CellReference();
+            Target.NoOfCellsSouth = Position.NoOfCellsSouth;
+            Target.NoOfCellsEast = Position.NoOfCellsEast;
+            return Target;
+        }
+
+        public static void MakeMonsterMove(ref char[,] Cavern, ref CellReference MonsterPosition, CellReference PlayerPosition, ref CellReference FlaskPosition)
 
         {
-
-            CellReference OriginalMonsterPosition = MonsterPosition;
+            CellReference OriginalMonsterPosition = CopyPosition(MonsterPosition);
 
             Cavern[MonsterPosition.NoOfCellsSouth, MonsterPosition.NoOfCellsEast] = ' ';
 
@@ -436,7 +501,7 @@ namespace CSPreASSkelton
 
             if(CheckIfSameCell(MonsterPosition, FlaskPosition)){
                 Cavern[OriginalMonsterPosition.NoOfCellsSouth, OriginalMonsterPosition.NoOfCellsEast] = 'F';
-                FlaskPosition = OriginalMonsterPosition;
+                FlaskPosition = CopyPosition(OriginalMonsterPosition);
             }
 
             Cavern[MonsterPosition.NoOfCellsSouth, MonsterPosition.NoOfCellsEast] = 'M';
@@ -459,7 +524,7 @@ namespace CSPreASSkelton
             System.Console.WriteLine("You win! " + (GotFlask ? "You grabbed the flask before the monster grabbed you!" : "You have outrun the monster and survived the cavern!"));
         }
 
-        public static void PlayGame(char[,] Cavern, ref CellReference MonsterPosition, ref CellReference PlayerPosition, ref CellReference FlaskPosition, ref CellReference[] TrapPositions, ref int Score, ref bool MonsterAwake)
+        public static void PlayGame(char[,] Cavern, ref CellReference MonsterPosition, ref CellReference PlayerPosition, ref CellReference FlaskPosition, ref List<CellReference> TrapPositions, ref int Score, ref bool MonsterAwake)
 
         {
 
@@ -507,8 +572,9 @@ namespace CSPreASSkelton
 
                     Eaten = CheckIfSameCell(MonsterPosition, PlayerPosition);
 
-                    for(int i = 0; i < TrapPositions.Length; i++){
+                    for(int i = 0; i < TrapPositions.Count; i++){
                         if(CheckIfSameCell(PlayerPosition, TrapPositions[i])){
+                            System.Console.WriteLine("You have stepped on a trap and awoken the MONSTER!");
                             MonsterAwake = true;
                         }
                     }
@@ -534,7 +600,7 @@ namespace CSPreASSkelton
 
                     {
 
-                        MakeMonsterMove(Cavern, ref MonsterPosition, PlayerPosition, ref FlaskPosition);
+                        MakeMonsterMove(ref Cavern, ref MonsterPosition, PlayerPosition, ref FlaskPosition);
 
                         Eaten = CheckIfSameCell(MonsterPosition, PlayerPosition);
 
