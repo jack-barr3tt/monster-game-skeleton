@@ -2,3 +2,4 @@ bin
 obj
 .vscode
 savegame.xml
+savegame.bin

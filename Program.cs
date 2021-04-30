@@ -101,48 +101,37 @@ namespace CSPreASSkelton
             }
         }
 
-        public static void AddItem(ref XmlTextWriter writer, string type, string[] names, string[] values){
-            writer.WriteStartElement(type);
-            for(int i = 0; i < names.Length; i++){
-                writer.WriteStartElement(names[i]);
-                writer.WriteString(values[i]);
-                writer.WriteEndElement();
+        public static string ToBinary<T>(T data, int bits){
+            int num = Convert.ToInt32(data);
+            string bin = Convert.ToString(num, 2);
+            while(bin.Length < bits){
+                bin = "0"+bin;
             }
-            writer.WriteEndElement();
+            return bin;
         }
+
+        public static void Write(ref BinaryWriter writer, CellReference Position){
+            writer.Write(Convert.ToSByte(Position.NoOfCellsSouth * 16 + Position.NoOfCellsEast));
+        }
+
         public static void SaveGame(char[,] Cavern, CellReference MonsterPosition, CellReference PlayerPosition, CellReference FlaskPosition, List<CellReference> TrapPositions, int Score, bool MonsterAwake, bool Eaten){
-            if(Eaten){
-                System.Console.WriteLine("You cannot save games that have already ended.");
-                return;
-            }
+            BinaryWriter writer = new BinaryWriter(File.Open("savegame.bin", FileMode.Create));
             
-            XmlTextWriter writer = new XmlTextWriter("savegame.xml", System.Text.Encoding.UTF8);
-            writer.Formatting = Formatting.Indented;
-            writer.Indentation = 2;
-            
-            writer.WriteStartDocument(true);
-            writer.WriteStartElement("Game");
-
-            List<CellReference> GameObjects = new List<CellReference>();
-            GameObjects.AddRange(new CellReference[3]{PlayerPosition, MonsterPosition, FlaskPosition});
-            GameObjects.AddRange(TrapPositions);
-
-            writer.WriteStartElement("Items");
-            for(int i = 0; i < GameObjects.Count; i++){
-                string type = Cavern[GameObjects[i].NoOfCellsSouth, GameObjects[i].NoOfCellsEast]+"";
-                string south = GameObjects[i].NoOfCellsSouth+"";
-                string east = GameObjects[i].NoOfCellsEast+"";
-                
-                AddItem(ref writer, "Item", new string[3]{"Type","NoOfCellsSouth","NoOfCellsEast"}, new string[3]{type, south, east});
+            writer.Write('M');
+            Write(ref writer, MonsterPosition);
+            writer.Write('*');
+            Write(ref writer, PlayerPosition);
+            writer.Write('F');
+            Write(ref writer, FlaskPosition);
+            for(int i = 0; i < TrapPositions.Count; i++){
+                writer.Write('T');
+                Write(ref writer, TrapPositions[i]);
             }
-            writer.WriteEndElement();
+            writer.Write('/');
+            writer.Write(Convert.ToSByte(MonsterAwake));
+            writer.Write(Convert.ToSByte(Score));
 
-            writer.WriteStartElement("Properties"); 
-            AddItem(ref writer, "Property", new string[2]{"Name","Value"}, new string[2]{"MonsterAwake",""+MonsterAwake});
-            AddItem(ref writer, "Property", new string[2]{"Name","Value"}, new string[2]{"Score",""+Score});
-            writer.WriteEndElement();
-
-            writer.WriteEndDocument();
+            writer.Flush();
             writer.Close();
 
             System.Console.WriteLine("Your progress has been saved. Press enter to return to menu.");
@@ -150,56 +139,49 @@ namespace CSPreASSkelton
         }
 
         public static void LoadGame(ref char[,] Cavern, ref CellReference MonsterPosition, ref CellReference PlayerPosition, ref CellReference FlaskPosition, ref List<CellReference> TrapPositions, ref int Score, ref bool MonsterAwake, ref bool Eaten){
-            TrapPositions = new List<CellReference>();
-            ResetCavern(ref Cavern);
-            Eaten = false;
-            
-            XmlDocument xmldoc = new XmlDocument();
-            FileStream fs = new FileStream("savegame.xml", FileMode.Open, FileAccess.Read);
-            xmldoc.Load(fs);
-
-            XmlNode items = xmldoc.GetElementsByTagName("Items")[0];          
-
-            for(int i = 0; i < items.ChildNodes.Count; i++){
-                XmlNode item = items.ChildNodes[i];
-
-                CellReference itemRef = new CellReference();
-
-                char name = '\u0000';
-                
-                for(int j = 0; j < item.ChildNodes.Count; j++){
-                    XmlNode property = item.ChildNodes[j];
-
-                    try{
-                        typeof(CellReference).GetField(property.Name).SetValue(itemRef, Convert.ToInt32(property.InnerText));
-                    }catch{
-                        name = Convert.ToChar(property.InnerText);
+            BinaryReader reader = new BinaryReader(File.Open("savegame.bin", FileMode.Open));
+            char item = '\u0000';
+            bool pickChar = true;
+            while(true){
+                int data = reader.Read();
+                if(data == '/' || data == -1){
+                    break;
+                }
+                if(pickChar){
+                    item = Convert.ToChar(data);
+                }else{
+                    int south = (data & 0b11110000) / 16;
+                    int east = data & 0b00001111;
+                    Cavern[south, east] = item;
+                    switch(item) {
+                    case '*':
+                        PlayerPosition.NoOfCellsSouth = south;
+                        PlayerPosition.NoOfCellsEast = east;
+                        break;
+                    case 'M':
+                        MonsterPosition.NoOfCellsSouth = south;
+                        MonsterPosition.NoOfCellsEast = east;
+                        break;
+                    case 'F':
+                        FlaskPosition.NoOfCellsSouth = south;
+                        FlaskPosition.NoOfCellsEast = east;
+                        break;
+                    case 'T':
+                        CellReference Trap = new CellReference();
+                        Trap.NoOfCellsSouth = south;
+                        Trap.NoOfCellsEast = east;
+                        TrapPositions.Add(Trap);
+                        break;
+                    default:
+                        break;
                     }
-                }    
-
-                if(name == '*'){
-                    PlayerPosition = itemRef;
-                }else if(name == 'M'){
-                    MonsterPosition = itemRef;
-                }else if(name == 'F'){
-                    FlaskPosition = itemRef;
-                }else{
-                    TrapPositions.Add(itemRef);
                 }
-
-                Cavern[itemRef.NoOfCellsSouth, itemRef.NoOfCellsEast] = name;
+                pickChar ^= true;
             }
-
-            XmlNode props = xmldoc.GetElementsByTagName("Properties")[0];
-            for(int i = 0; i < props.ChildNodes.Count; i++){
-                XmlNode prop = props.ChildNodes[i];
-                if(prop.ChildNodes[0].InnerText == "MonsterAwake"){
-                    MonsterAwake = Convert.ToBoolean(prop.ChildNodes[1].InnerText);
-                }else{
-                    Score = Convert.ToInt32(prop.ChildNodes[1].InnerText);
-                }
-            }
-
+            MonsterAwake = Convert.ToBoolean(reader.Read());
+            Score = reader.Read();
+            reader.Close();
+            Eaten = false;
             System.Console.WriteLine("Your saved game has been restored.\n");
             Console.ReadLine();
         }
